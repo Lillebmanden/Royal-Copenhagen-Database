@@ -11,7 +11,7 @@ table {
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "spil";
+$dbname = "royal";
 
 
 
