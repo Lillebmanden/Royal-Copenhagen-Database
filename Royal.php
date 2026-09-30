@@ -16,7 +16,7 @@ table {
 </form>
 
 <form action="/register.php">
-<button type="submit">Create acount</button>
+<button type="submit">Create account</button>
 </form>
 
 <p id="test">test</p>
