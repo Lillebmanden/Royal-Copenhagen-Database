@@ -46,6 +46,9 @@ for ($x = 0; $x <= count($items)-1; $x++) {
 
 <label for="Årgang">Årgang:</label>
 <input type="number" name="year" id="year" value="<?php if ($_GET){if($_GET["year"]){echo $_GET["year"];}}?>">
+
+<label for="Kunstner">Kunstner:</label>
+<input type="text" name="maker" id="maker" value="<?php if ($_GET){if($_GET["maker"]){echo $_GET["maker"];}}?>">
 </form>
 
 <button onclick="myFunction()">Submit</button>
@@ -68,9 +71,11 @@ if (!$conn) {
 }
 if ($_GET){
   if (! str_contains($_GET["name"], "'")){
-    $sql = "SELECT serv.Navn AS sNavn,Stel.Navn AS setNavn,serv.Farve,serv.Pris,medlem.Navn AS mNavn,medlem.Efternavn,Stel.`Årgang` FROM serv 
+    $sql = "SELECT serv.Produktionsnummer AS nummer,serv.Navn AS sNavn,Stel.Navn AS setNavn,serv.Farve,serv.Pris,medlem.Navn AS mNavn,medlem.Efternavn,Stel.`Årgang`, GROUP_CONCAT(kunst.Navn) AS kunstner FROM serv 
     LEFT JOIN stel ON serv.Stelnummer = stel.Stelnummer
     LEFT JOIN medlem ON serv.Medlemsnummer = medlem.Medlemsnummer
+    LEFT JOIN har_lavet ON serv.Produktionsnummer = har_lavet.Produktionsnumre
+    LEFT JOIN kunst ON har_lavet.Kunstnernumre = kunst.Kunstnernumre 
     WHERE 1 ";
     if ($_GET["member"]){
       $sql = $sql . " AND (medlem.Navn LIKE '%" . $_GET["member"] . "%' OR medlem.Efternavn LIKE '%" . $_GET["member"] . "%')";
@@ -90,15 +95,26 @@ if ($_GET){
     if ($_GET["year"]){
       $sql = $sql . " AND Stel.`Årgang` = '" . $_GET["year"] . "'";
     }
+    $sql = $sql . " GROUP BY serv.Produktionsnummer ";
+    if ($_GET["maker"]){
+      $sql = $sql . " HAVING kunstner LIKE '%" . $_GET["maker"] . "%'";
+    }
   }else{
-    $sql = "SELECT serv.Navn,Stel.Navn,serv.Farve,serv.Pris,medlem.Navn,medlem.Efternavn,Stel.`Årgang` FROM serv 
+    $sql = "SELECT serv.Produktionsnummer AS nummer,serv.Navn AS sNavn,Stel.Navn AS setNavn,serv.Farve,serv.Pris,medlem.Navn AS mNavn,medlem.Efternavn,Stel.`Årgang`, GROUP_CONCAT(kunst.Navn) AS kunstner FROM serv 
     LEFT JOIN stel ON serv.Stelnummer = stel.Stelnummer
-    LEFT JOIN medlem ON serv.Medlemsnummer = medlem.Medlemsnummer";
+    LEFT JOIN medlem ON serv.Medlemsnummer = medlem.Medlemsnummer
+    LEFT JOIN har_lavet ON serv.Produktionsnummer = har_lavet.Produktionsnumre
+    LEFT JOIN kunst ON har_lavet.Kunstnernumre = kunst.Kunstnernumre
+    GROUP BY serv.Produktionsnummer";
   }
 }else{
-  $sql = "SELECT serv.Navn AS sNavn,Stel.Navn AS setNavn,serv.Farve,serv.Pris,medlem.Navn AS mNavn,medlem.Efternavn,Stel.`Årgang` FROM serv 
+  $sql = "SELECT serv.Produktionsnummer AS nummer,serv.Navn AS sNavn,Stel.Navn AS setNavn,serv.Farve,serv.Pris,medlem.Navn AS mNavn,medlem.Efternavn,Stel.`Årgang`, GROUP_CONCAT(kunst.Navn) AS kunstner FROM serv 
   LEFT JOIN stel ON serv.Stelnummer = stel.Stelnummer
-  LEFT JOIN medlem ON serv.Medlemsnummer = medlem.Medlemsnummer";
+  LEFT JOIN medlem ON serv.Medlemsnummer = medlem.Medlemsnummer
+  LEFT JOIN har_lavet ON serv.Produktionsnummer = har_lavet.Produktionsnumre
+  LEFT JOIN kunst ON har_lavet.Kunstnernumre = kunst.Kunstnernumre
+  GROUP BY serv.Produktionsnummer";
+
 }
 // Execute the SQL query
 $result = mysqli_query($conn, $sql);
@@ -108,9 +124,9 @@ if (mysqli_num_rows($result) > 0) {
   // Output data of each row
   echo "<h3>Resultater:<br></h3>";
   echo '<table style="width:50%">';
-  echo '<tr><td><h3>Produkt Navn</h3></td><td><h3>Stel</h3></td><td><h3>Farve</h3></td><td><h3>Eger</h3></td><td><h3>Pris</h3></td><td><h3>Årgang</h3></td></tr>';
+  echo '<tr><td><h3>Produkt Navn</h3></td><td><h3>Stel</h3></td><td><h3>Farve</h3></td><td><h3>Eger</h3></td><td><h3>Pris</h3></td><td><h3>Årgang</h3></td><td><h3>Kunstner</h3></td></tr>';
   while($row = mysqli_fetch_assoc($result)) {
-    echo '<tr><td style="width:15%">' . $row["sNavn"] . '</td><td style="width:15%">' . $row["setNavn"] . '</td><td style="width:10%">' . $row["Farve"] . '</td><td style="width:20%">' . $row["mNavn"] . " " . $row["Efternavn"] . '</td><td style="width:10%">' . $row["Pris"] . '</td><td style="width:10%">' . $row["Årgang"] . '</td></tr>';
+    echo '<tr><td style="width:15%"><a href="javascript:toEdit(' . $row["nummer"] . ')">' . $row["sNavn"] . '</a></td><td style="width:15%">' . $row["setNavn"] . '</td><td style="width:10%">' . $row["Farve"] . '</td><td style="width:20%">' . $row["mNavn"] . " " . $row["Efternavn"] . '</td><td style="width:10%">' . $row["Pris"] . '</td><td style="width:10%">' . $row["Årgang"] . '</td><td style="width:10%">' . $row["kunstner"] . '</td></tr>';
     //echo "Navn: " . $row["Navn"]. " - Nummer: " . $row["Spilnummer"]. " - Version: " . $row["Version"]. "<br>";
   }
   echo "</table>";
@@ -120,6 +136,10 @@ if (mysqli_num_rows($result) > 0) {
 
 mysqli_close($conn);
 ?>
+
+<form action="/edit.php" method="get" id="form2">
+<input hidden name="item" id="item">
+</form>
 
 <script>
 function myFunction() {
@@ -131,6 +151,10 @@ function myFunction() {
  //document.getElementById("test").innerHTML = document.getElementById("vers").value;
 }
 
+function toEdit(pressed) {
+  document.getElementById("item").value = pressed
+  document.getElementById("form2").submit();
+}
 </script>
 
 

@@ -22,7 +22,7 @@ Your browser does not support the audio element.
 </form>
 
 <form action="/register.php">
-<button type="submit">Create account</button>
+<button type="submit">Create acount</button>
 </form>
 
 <p id="test">test</p>
