@@ -29,8 +29,12 @@ td {
 $items = ["None","Grøn","Blå","Orange","Sort"];
 for ($x = 0; $x <= count($items)-1; $x++) {
   echo '<option value="' . $items[$x] . '"';
-  if ($_GET["color"] == $items[$x]){
-    echo " selected ";
+  if ($_GET){
+    if ($_GET["color"]){
+      if ($_GET["color"] == $items[$x]){
+        echo " selected ";
+      }
+    }
   }
   echo '>' . $items[$x] . '</option>';
 }

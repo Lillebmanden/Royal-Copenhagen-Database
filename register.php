@@ -31,7 +31,7 @@ if (!$conn) {
 mysqli_close($conn);
 ?>
 
-<form action="/registerValidation.php" method="get">
+<form action="/registerValidation.php" method="get" id="form1">
   <label for="fname">First name:</label><br>
   <input type="text" id="fname" name="fname" value=""><br>
   <label for="lname">Last name:</label><br>
@@ -40,15 +40,17 @@ mysqli_close($conn);
   <input type="text" id="uname" name="uname" value=""><br><br>
   <label for="lname">Password:</label><br>
   <input type="password" id="pass" name="pass" value=""><br><br>
-  <input type="submit" value="Submit">
+
+  <input type="hidden" id="action">
 </form> 
 
+<button onclick="myFunction()">Submit</button>
 
 <p id="test">test</p>
 
 <script>
 function myFunction() {
-  if(document.getElementById("vers").value.includes("'")) {
+  if(document.getElementById("fname").value.includes("'")) {
     document.getElementById("test").innerHTML = "error"
   } else {
     document.getElementById("form1").submit();
